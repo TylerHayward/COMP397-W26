@@ -1,6 +1,4 @@
 using KBCore.Refs;
-using NUnit.Framework;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,29 +7,49 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class NPCMovement : MonoBehaviour
 {
-    [SerializeField, Self] private NavMeshAgent agent;
+    [SerializeField] private NavMeshAgent agent;
     [SerializeField] private List<GameObject> waypoints = new List<GameObject>();
+
     private Vector3 destination;
     private int index;
 
     private void OnValidate() => this.ValidateRefs();
-    
-        
-    
+
     void Start()
     {
         waypoints = GameObject.FindGameObjectsWithTag("waypoint").ToList();
-        if (waypoints.Count< 0) return;
-        agent.destination = destination = waypoints[index].transform.position;
+
+        if (waypoints.Count <= 0) return;
+
+        destination = waypoints[index].transform.position;
+        agent.destination = destination;
     }
 
-  
     void Update()
     {
-        if (waypoints.Count < 0) return;
-        if (Vector3.Distance(transform.position, destination) < 3f) 
+        if (waypoints.Count <= 0) return;
+
+        if (Vector3.Distance(transform.position, destination) < 3f)
         {
-            index = (index + 1) % waypoints.Count();
+            index = (index + 1) % waypoints.Count;
+            destination = waypoints[index].transform.position;
+            agent.destination = destination;
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            destination = other.transform.position;
+            agent.destination = destination;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
             destination = waypoints[index].transform.position;
             agent.destination = destination;
         }
